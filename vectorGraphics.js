@@ -1,18 +1,17 @@
 var canvas = document.getElementById("canvas");
 var ctx    = canvas.getContext("2d");
 
-var entity = Entity(50, 50, 0, 1, [Point(25, 25), Point(25, -25), Point(-25, -25), Point(-25, 25)]);
+var entity = Entity(50, 50, 0, 1, 0, 0, [Point(25, 25), Point(25, -25), Point(-25, -25), Point(-25, 25)]);
 
 redraw();
 setInterval(redraw, 32);
 
 function redraw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    entity.angle += 0.04;
     entity.draw(ctx);
 }
 
-function Entity(x, y, angle, scale, points) {
+function Entity(x, y, angle, scale, xShear, yShear, points) {
     entity = {};
     
     entity.x = x;
@@ -20,9 +19,11 @@ function Entity(x, y, angle, scale, points) {
     
     entity.angle  = angle;
     entity.scale  = scale;
-    entity.points = points;
+    entity.xShear = xShear;
+    entity.yShear = yShear;
     
-    entity.draw = drawEntity;
+    entity.points = points;
+    entity.draw   = drawEntity;
     
     return entity;
 }
@@ -36,9 +37,30 @@ function Point(x, y) {
     return point;
 }
 
+function transitionProperty(entity, property, goal, step) {
+    stepper = setInterval(function() {
+        if(entity[property] < goal) {
+            entity[property] += step;
+            if(entity[property] > goal) {
+                entity[property] = goal;
+                clearInterval(stepper);
+            }
+        } else if(entity[property] > goal) {
+            entity[property] -= step;
+            if(entity[property] < goal) {
+                entity[property] = goal;
+                clearInterval(stepper);
+            }
+        } else {
+            clearInterval(stepper);
+        }
+    }, 32);
+}
+
+
 function drawEntity(ctx) {
-    matrix = [[Math.cos(this.angle) * this.scale, (Math.sin(this.angle)) * this.scale],
-             [(-Math.sin(this.angle)) * this.scale, Math.cos(this.angle) * this.scale]];
+    matrix = [[Math.cos(this.angle) * this.scale, (Math.sin(this.angle) + this.xShear) * this.scale],
+             [(-Math.sin(this.angle) + this.yShear) * this.scale, Math.cos(this.angle) * this.scale]];
     
     points = [];
     for(pointIndex in this.points) {
