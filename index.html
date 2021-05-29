@@ -3,6 +3,8 @@
     <head>
         <title>JSVectorGraphics</title>
         
+        <meta charset="utf-8" />
+
         <style>
             body {
                 background-color: #222222;
@@ -19,5 +21,55 @@
         <canvas id="canvas" width="640" height="480" ></canvas>
         
         <script src="vectorGraphics.js" ></script>
+        <script>
+            const canvas = document.querySelector("#canvas");
+
+            const engine = new RenderEngine(canvas);
+            const renderable = new Renderable([new Point(20, 0), new Point(0, 20), new Point(-20, 0), new Point(0, -20)]);
+
+            const objects = [];
+            for(let index = 0; index < 50; index++) {
+                objects.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    xv: Math.random() * 2 - 1,
+                    yv: Math.random() * 2 - 1,
+                    angle: Math.random() * 2 * Math.PI,
+                    scale: Math.random() + 0.5
+                });
+            }
+
+            function update() {
+                for(const obj of objects) {
+                    obj.x += obj.xv;
+                    obj.y += obj.yv;
+
+                    if(obj.x < 0 || obj.x > canvas.width)
+                        obj.xv *= -1;
+
+                    if(obj.y < 0 || obj.y > canvas.height)
+                        obj.yv *= -1;
+
+                    obj.angle += 0.01;
+                }
+            }
+
+            function draw() {
+                engine.clear();
+
+                for(const obj of objects)
+                    engine.render(renderable, obj.x, obj.y, obj.angle, { scale: obj.scale });
+            }
+
+            function loop() {
+                update();
+                draw();
+
+                requestAnimationFrame(loop);
+            }
+
+            requestAnimationFrame(loop);
+
+        </script>
     </body>
 </html>
